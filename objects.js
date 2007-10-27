@@ -9,6 +9,20 @@ function _binfo(b)
 	return 'w: '+w+'.  h: '+h+'.  area: '+ar;
 }
 
+function boundsDict(b)
+{
+	var d = {};
+	d.sw = b.getSouthWest();
+	d.ne = b.getNorthEast();
+
+	d.s = d.sw.lat();
+	d.n = d.ne.lat();
+
+	d.w = d.sw.lng();
+	d.e = d.ne.lng();
+	return d;
+}
+
 function EditableRect(m, b) {
 	var markers = {};
 	var rbounds;
@@ -20,12 +34,6 @@ function EditableRect(m, b) {
 	squareIcon.shadow = null;
 	squareIcon.iconSize = new GSize(10, 10);
 	squareIcon.iconAnchor = new GPoint(5, 5);
-
-	var dmarker_opts = {
-		draggable:true,
-		clickable:false,
-		icon:squareIcon,
-	}
 
 	function rect_poly(p1, p2) {
 		var p12 = new GLatLng(p1.lat(), p2.lng());
@@ -49,15 +57,29 @@ function EditableRect(m, b) {
 		map.addOverlay(rpoly);
 	}
 
+	function for_each_corner(func)
+	{
+		var lats = ['s', 'n'];
+		var lngs = ['w', 'e'];
+		lats.forEach(function (lat) {
+			lngs.forEach(function (lng) {
+				func(lat+lng);
+			})
+		})
+	}
+
+	function move_markers(bd)
+	{
+		for_each_corner(function (corner) {
+			var p = new GLatLng(bd[corner[0]], bd[corner[1]]);
+			markers[corner].setLatLng(p);
+		});
+	}
+
 	function redraw_all()
 	{
-		var sw = rbounds.getSouthWest();
-		var ne = rbounds.getNorthEast();
-
-		markers.msw.setLatLng(sw);
-		markers.mne.setLatLng(ne);
-		markers.mnw.setLatLng(new GLatLng(ne.lat(), sw.lng()));
-		markers.mse.setLatLng(new GLatLng(sw.lat(), ne.lng()));
+		var d = boundsDict(rbounds);
+		move_markers(d);
 
 		redraw_rect(rbounds);
 
@@ -71,7 +93,13 @@ function EditableRect(m, b) {
 		redraw_all();
 	}
 
-	function dmarker(point, corner)
+	var dmarker_opts = {
+		draggable:true,
+		clickable:false,
+		icon:squareIcon,
+	}
+
+	function newMarker(point, corner)
 	{
 		var m = new GMarker(point, dmarker_opts);
 		var t = this;
@@ -105,7 +133,8 @@ function EditableRect(m, b) {
 			function () {
 				change(newBounds(m));
 			});
-		return m;
+
+		markers[corner] = m;
 	}
 
 	rbounds = b;
@@ -113,10 +142,9 @@ function EditableRect(m, b) {
 	// dummy point. the markers will be moved on redraw_all()
 	var p = b.getSouthWest();
 
-	markers.mne = dmarker(p, "ne");
-	markers.mnw = dmarker(p, "nw");
-	markers.msw = dmarker(p, "sw");
-	markers.mse = dmarker(p, "se");
+	for_each_corner(function (c) {
+		newMarker(p, c);
+	});
 
 	redraw_all();
 
