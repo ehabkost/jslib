@@ -32,3 +32,9 @@ function add_rect()
 	log("click!\n");
 	var e = new EditableRect(map, map.getBounds());
 }
+
+function add_dom()
+{
+	var o = new DomOverlay(map.getBounds(), document.getElementById("overlaydiv"), G_MAP_MAP_PANE);
+	map.addOverlay(o);
+}

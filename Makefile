@@ -1,10 +1,10 @@
 all: jstest.js
 
 jsobjects.js: objects.js
-	cat $^ > $@
+	sh jsgen.sh $^ > $@
 
-jstest.js: jsobjects.js test.js
-	cat $^ > $@
+jstest.js: overlays.js objects.js test.js
+	sh jsgen.sh $^ > $@
 
 clean:
 	rm -f js*.js

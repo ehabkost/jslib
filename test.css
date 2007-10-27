@@ -21,3 +21,9 @@ html, body { width: 100%; height: 100%; margin: 0; padding: 0; }
 	background-color: white;
 	text-color: black;
 }
+
+#overlaydiv {
+	border: thin solid black;
+	display: none;
+	background-color: blue;
+}
