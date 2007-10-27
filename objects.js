@@ -10,15 +10,21 @@ function _binfo(b)
 }
 
 function EditableRect(m, b) {
-
-	var m1, m2;
+	var markers = {};
 	var rbounds;
 	var rpoly = null;
 	var map = m;
 
+	var squareIcon = new GIcon();
+	squareIcon.image = 'http://localhost/gmaps/jslib/images/redsquare.png';
+	squareIcon.shadow = null;
+	squareIcon.iconSize = new GSize(10, 10);
+	squareIcon.iconAnchor = new GPoint(5, 5);
+
 	var dmarker_opts = {
 		draggable:true,
 		clickable:false,
+		icon:squareIcon,
 	}
 
 	function rect_poly(p1, p2) {
@@ -33,45 +39,87 @@ function EditableRect(m, b) {
 		ctrl.value = _binfo(rbounds);
 	}
 
-	function redo_rect()
+	function redraw_rect(b)
 	{
-		rbounds = new GLatLngBounds(m1.getLatLng(), m2.getLatLng());
-
 		if (rpoly) {
 			map.removeOverlay(rpoly);
 			delete rpoly;
 		}
-		rpoly = rect_poly(m1.getLatLng(), m2.getLatLng());
+		rpoly = rect_poly(b.getSouthWest(), b.getNorthEast());
 		map.addOverlay(rpoly);
+	}
 
-		//XXX: resize event
+	function redraw_all()
+	{
+		var sw = rbounds.getSouthWest();
+		var ne = rbounds.getNorthEast();
+
+		markers.msw.setLatLng(sw);
+		markers.mne.setLatLng(ne);
+		markers.mnw.setLatLng(new GLatLng(ne.lat(), sw.lng()));
+		markers.mse.setLatLng(new GLatLng(sw.lat(), ne.lng()));
+
+		redraw_rect(rbounds);
+
+		//TODO: resize event
 		//get_counts();
 		//show_sizes();
 	}
 
-	this.change = function(b) {
-		var sw = b.getSouthWest();
-		var ne = b.getNorthEast();
-
-		m1.setLatLng(sw);
-		m2.setLatLng(ne);
-
-		redo_rect();
+	function change(b) {
+		rbounds = b;
+		redraw_all();
 	}
 
-	function dmarker(point)
+	function dmarker(point, corner)
 	{
 		var m = new GMarker(point, dmarker_opts);
+		var t = this;
 		map.addOverlay(m);
-		GEvent.addListener(m, "dragend", redo_rect);
+		function newBounds(m)
+		{
+			var sw = rbounds.getSouthWest();
+			var ne = rbounds.getNorthEast();
+			var p = m.getLatLng();
+
+			// trick to change the right parameter
+			// according to the corner
+			var lats = { s: sw.lat(), n:ne.lat() };
+			var lngs = { w: sw.lng(), e:ne.lng() };
+
+			// change either n or s
+			lats[corner[0]] = p.lat();
+			// change either s or w
+			lngs[corner[1]] = p.lng();
+
+			sw = new GLatLng(lats.s, lngs.w);
+			ne = new GLatLng(lats.n, lngs.e);
+			return new GLatLngBounds(sw, ne);
+		}
+
+		/*GEvent.addListener(m, "drag",
+			function () {
+				redraw_rect(newBounds(m));
+			});*/
+		GEvent.addListener(m, "dragend",
+			function () {
+				change(newBounds(m));
+			});
 		return m;
 	}
 
-	m1 = dmarker(b.getSouthWest());
-	m2 = dmarker(b.getNorthEast());
+	rbounds = b;
 
-	this.m1 = m1;
-	this.m2 = m2;
-	redo_rect();
+	// dummy point. the markers will be moved on redraw_all()
+	var p = b.getSouthWest();
+
+	markers.mne = dmarker(p, "ne");
+	markers.mnw = dmarker(p, "nw");
+	markers.msw = dmarker(p, "sw");
+	markers.mse = dmarker(p, "se");
+
+	redraw_all();
+
+	this.change = change;
 }
 
