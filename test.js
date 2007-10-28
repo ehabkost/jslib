@@ -30,7 +30,7 @@ function test_load()
 function add_rect()
 {
 	log("click!\n");
-	var e = new EditableRect(map, map.getBounds());
+	var e = new EditableRect(map, map.getBounds(), "testrect");
 }
 
 function add_dom()

@@ -3,7 +3,7 @@ all: jstest.js
 jsobjects.js: objects.js
 	sh jsgen.sh $^ > $@
 
-jstest.js: overlays.js objects.js test.js
+jstest.js: compat.js overlays.js objects.js test.js
 	sh jsgen.sh $^ > $@
 
 clean:

@@ -23,10 +23,9 @@ function boundsDict(b)
 	return d;
 }
 
-function EditableRect(m, b) {
+function EditableRect(m, b, cls) {
 	var markers = {};
 	var rbounds;
-	var rpoly = null;
 	var map = m;
 
 	var squareIcon = new GIcon();
@@ -34,13 +33,10 @@ function EditableRect(m, b) {
 	squareIcon.shadow = null;
 	squareIcon.iconSize = new GSize(10, 10);
 	squareIcon.iconAnchor = new GPoint(5, 5);
+	squareIcon.maxHeight = 0;
 
-	function rect_poly(p1, p2) {
-		var p12 = new GLatLng(p1.lat(), p2.lng());
-		var p21 = new GLatLng(p2.lat(), p1.lng());
-
-		return new GPolygon([p1, p12, p2, p21, p1], "#222222", 1, 1, "#0000ff", 0.2);
-	}
+	var rect_overlay = new DomRectOverlay(b, cls, G_MAP_MAP_PANE);
+	map.addOverlay(rect_overlay);
 
 	function show_sizes(ctrl)
 	{
@@ -49,20 +45,15 @@ function EditableRect(m, b) {
 
 	function redraw_rect(b)
 	{
-		if (rpoly) {
-			map.removeOverlay(rpoly);
-			delete rpoly;
-		}
-		rpoly = rect_poly(b.getSouthWest(), b.getNorthEast());
-		map.addOverlay(rpoly);
+		rect_overlay.setBounds(b);
 	}
 
 	function for_each_corner(func)
 	{
 		var lats = ['s', 'n'];
 		var lngs = ['w', 'e'];
-		lats.forEach(function (lat) {
-			lngs.forEach(function (lng) {
+		arrayForEach(lats, function (lat) {
+			arrayForEach(lngs, function (lng) {
 				func(lat+lng);
 			})
 		})
@@ -125,10 +116,20 @@ function EditableRect(m, b) {
 			return new GLatLngBounds(sw, ne);
 		}
 
-		/*GEvent.addListener(m, "drag",
+		GEvent.addListener(m, "drag",
 			function () {
-				redraw_rect(newBounds(m));
-			});*/
+				var b = newBounds(m);
+				var bd = boundsDict(b);
+				redraw_rect(b);
+
+				// move the markers, except the one being dragged
+				for_each_corner(function (c) {
+					if (c == corner) return;
+
+					var p = new GLatLng(bd[c[0]], bd[c[1]]);
+					markers[c].setLatLng(p);
+				});
+			});
 		GEvent.addListener(m, "dragend",
 			function () {
 				change(newBounds(m));

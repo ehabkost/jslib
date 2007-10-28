@@ -1,5 +1,6 @@
 function DomOverlay(aBounds, aNode, aPane)
 {
+	GOverlay.call(this);
 	var node = aNode.cloneNode(true);
 	var pane = aPane;
 	var bounds = aBounds;
@@ -19,7 +20,7 @@ function DomOverlay(aBounds, aNode, aPane)
 	}
 
 	this.redraw = function(force) {
-		//if (!force) return;
+		if (!force) return;
 
 		var p1 = map.fromLatLngToDivPixel(bounds.getSouthWest());
 		var p2 = map.fromLatLngToDivPixel(bounds.getNorthEast());
@@ -31,5 +32,16 @@ function DomOverlay(aBounds, aNode, aPane)
 		node.style.top = Math.min(p2.y, p1.y)+"px";
 		node.style.display = 'block';
 	}
+
+	this.setBounds = function(b) {
+		bounds = b;
+		this.redraw(true);
+	}
 }
-DomOverlay.prototype = new GOverlay();
+
+function DomRectOverlay(bounds, cls, pane)
+{
+	var div = document.createElement("div");
+	div.setAttribute('class', cls);
+	DomOverlay.call(this, bounds, div, pane);
+}
