@@ -27,10 +27,22 @@ function test_load()
 	}
 }
 
+function test_bounds()
+{
+	var b = map.getBounds();
+	var c = b.getCenter();
+	var s = (b.getSouthWest().lat()+c.lat())/2;
+	var n = (b.getNorthEast().lat()+c.lat())/2;
+	var w = (b.getSouthWest().lng()+c.lng())/2;
+	var e = (b.getNorthEast().lng()+c.lng())/2;
+
+	return new GLatLngBounds(new GLatLng(s, w), new GLatLng(n, e));
+}
+
 function add_rect()
 {
 	log("click!\n");
-	var e = new EditableRect(map, map.getBounds(), "testrect");
+	var e = new EditableRect(map, test_bounds(), "testrect");
 }
 
 function add_dom()
