@@ -129,10 +129,13 @@ function EditableRect(m, b, cls) {
 					var p = new GLatLng(bd[c[0]], bd[c[1]]);
 					markers[c].setLatLng(p);
 				});
+
+				GEvent.trigger(this, "resize");
 			});
 		GEvent.addListener(m, "dragend",
 			function () {
 				change(newBounds(m));
+				GEvent.trigger(this, "resizeend");
 			});
 
 		markers[corner] = m;
