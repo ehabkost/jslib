@@ -42,11 +42,16 @@ function test_bounds()
 function add_rect()
 {
 	log("click!\n");
-	var e = new EditableRect(map, test_bounds(), "testrect");
+	var e = new EditableRect(map, test_bounds(), "testrect", function (b) {
+		var b = e.bounds();
+		document.getElementById("statusbar").innerHTML = _binfo(b);
+	});
+	return false;
 }
 
 function add_dom()
 {
 	var o = new DomOverlay(map.getBounds(), document.getElementById("overlaydiv"), G_MAP_MAP_PANE);
 	map.addOverlay(o);
+	return false;
 }

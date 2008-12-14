@@ -6,7 +6,7 @@ function _binfo(b)
 	var h = (ne.lat() - sw.lat())*1000;
 	var ar = w*h;
 
-	return 'w: '+w+'.  h: '+h+'.  area: '+ar;
+	return 'ne: '+ne+', sw: '+sw+'. w: '+w+'.  h: '+h+'.  area: '+ar;
 }
 
 function boundsDict(b)
@@ -23,10 +23,11 @@ function boundsDict(b)
 	return d;
 }
 
-function EditableRect(m, b, cls) {
+function EditableRect(m, b, cls, resizefunc) {
 	var markers = {};
 	var rbounds;
 	var map = m;
+	var that = this;
 
 	var squareIcon = new GIcon();
 	squareIcon.image = 'http://localhost/gmaps/jslib/images/redsquare.png';
@@ -37,11 +38,6 @@ function EditableRect(m, b, cls) {
 
 	var rect_overlay = new DomRectOverlay(b, cls, G_MAP_MAP_PANE);
 	map.addOverlay(rect_overlay);
-
-	function show_sizes(ctrl)
-	{
-		ctrl.value = _binfo(rbounds);
-	}
 
 	function redraw_rect(b)
 	{
@@ -74,9 +70,7 @@ function EditableRect(m, b, cls) {
 
 		redraw_rect(rbounds);
 
-		//TODO: resize event
 		//get_counts();
-		//show_sizes();
 	}
 
 	function change(b) {
@@ -129,17 +123,17 @@ function EditableRect(m, b, cls) {
 					var p = new GLatLng(bd[c[0]], bd[c[1]]);
 					markers[c].setLatLng(p);
 				});
-
-				GEvent.trigger(this, "resize");
 			});
 		GEvent.addListener(m, "dragend",
 			function () {
 				change(newBounds(m));
-				GEvent.trigger(this, "resizeend");
+				resizefunc(rbounds);
 			});
 
 		markers[corner] = m;
 	}
+
+	this.bounds = function () { return rbounds; }
 
 	rbounds = b;
 
