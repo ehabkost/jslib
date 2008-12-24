@@ -152,7 +152,8 @@ function EditableRect(m, b, cls, resizefunc) {
 		GEvent.addListener(m, "dragend",
 			function () {
 				change(newBounds(m));
-				resizefunc(rbounds);
+				if (resizefunc)
+					resizefunc(rbounds);
 			});
 
 		markers[corner] = m;
