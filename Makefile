@@ -1,5 +1,8 @@
 all: jstest.js
 
+#XXX: using jsgen.sh is useful for simple pages, but for more complex
+# projects, it won't work because some files may get included twice
+
 jsobjects.js: compat.js overlays.js objects.js
 	sh jsgen.sh $^ > $@
 
