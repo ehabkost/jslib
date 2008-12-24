@@ -54,6 +54,7 @@ function EditableRect(m, b, cls, resizefunc) {
 	var that = this;
 
 	var squareIcon = new GIcon();
+	//FIXME: fix the URL
 	squareIcon.image = 'http://localhost/gmaps/jslib/images/redsquare.png';
 	squareIcon.shadow = null;
 	squareIcon.iconSize = new GSize(10, 10);
