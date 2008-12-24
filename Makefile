@@ -1,6 +1,6 @@
 all: jstest.js
 
-jsobjects.js: objects.js
+jsobjects.js: compat.js overlays.js objects.js
 	sh jsgen.sh $^ > $@
 
 jstest.js: compat.js overlays.js objects.js test.js
